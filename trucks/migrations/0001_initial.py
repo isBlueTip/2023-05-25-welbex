@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name="Truck",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("unique_number", models.CharField(max_length=5, unique=True, verbose_name="Truck number")),
+                ("unique_number", models.CharField(blank=True, max_length=5, unique=True, verbose_name="Truck number")),
                 ("payload_capacity", models.PositiveIntegerField(verbose_name="Max cargo weight carried by the truck")),
                 (
                     "current_location",
