@@ -14,7 +14,7 @@ def populate_locations(apps, schema_editor):
             latitude = row[1]
             longitude = row[2]
             city = row[3]
-            state = row[5]
+            state = row[4]
 
             location = Location.objects.update_or_create(
                 city=city,
