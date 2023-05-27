@@ -1,7 +1,13 @@
+from pprint import pprint
+
+from django.contrib.gis.measure import Distance
+from django.db.models import Count, F, Func, Q, Sum
+from django.db.models.fields import IntegerField
+from django.db.models.functions import Cast
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from api.serializers import CargoSerializer
+from api.serializers import CargoListSerializer, CargoSerializer
 from cargo.models import Cargo
 from core.utils import get_distance
 from trucks.models import Truck
@@ -9,7 +15,12 @@ from trucks.models import Truck
 
 class CargoViewSet(viewsets.ModelViewSet):
     queryset = Cargo.objects.all()
-    serializer_class = CargoSerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CargoListSerializer
+        else:
+            return CargoSerializer
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -19,8 +30,6 @@ class CargoViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
 
         data = serializer.data
-
-        print(data)
 
         data["trucks"] = {}
 

@@ -2,6 +2,7 @@ import django.db.models
 from rest_framework import serializers
 
 from cargo.models import Cargo
+from core.utils import get_distance
 from locations.models import Location
 from trucks.models import Truck
 
@@ -49,14 +50,37 @@ class CargoSerializer(serializers.ModelSerializer):
             return Location.objects.get(zip_code=value)
         except django.db.models.ObjectDoesNotExist:
             raise serializers.ValidationError("Pick-up zipcode is unknown")
-        # return location
 
     def validate_delivery_zipcode(self, value):
         try:
             return Location.objects.get(zip_code=value)
         except django.db.models.ObjectDoesNotExist:
             raise serializers.ValidationError("Delivery zipcode is unknown")
-        # return location
+
+
+class CargoListSerializer(serializers.ModelSerializer):
+    pick_up_location = serializers.CharField(read_only=True)
+    delivery_location = serializers.CharField(read_only=True)
+    closest_trucks_num = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Cargo
+        fields = [
+            "id",
+            "weight",
+            "description",
+            "pick_up_location",
+            "delivery_location",
+            "closest_trucks_num",
+        ]
+
+    def get_closest_trucks_num(self, obj):
+        num = 0
+        for truck in Truck.objects.all():
+            distance_to_pick_up = get_distance(obj.delivery_location.coordinates, truck.current_location.coordinates)
+            if distance_to_pick_up <= 450:
+                num += 1
+        return num
 
 
 class TruckSerializer(serializers.ModelSerializer):
