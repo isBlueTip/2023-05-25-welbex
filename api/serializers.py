@@ -17,17 +17,13 @@ class TruckListSerializer(serializers.ModelSerializer):
 
 
 class CargoSerializer(serializers.ModelSerializer):
-    pick_up_zipcode = serializers.CharField(write_only=True)
-    delivery_zipcode = serializers.CharField(write_only=True)
-    pick_up_location = serializers.CharField(read_only=True)
-    delivery_location = serializers.CharField(read_only=True)
+    pick_up_location = serializers.CharField(required=False)
+    delivery_location = serializers.CharField(required=False)
 
     class Meta:
         model = Cargo
         fields = [
             "id",
-            "pick_up_zipcode",
-            "delivery_zipcode",
             "weight",
             "description",
             "pick_up_location",
@@ -35,8 +31,8 @@ class CargoSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
-        validated_data["pick_up_location"] = validated_data.pop("pick_up_zipcode")
-        validated_data["delivery_location"] = validated_data.pop("delivery_zipcode")
+        validated_data["pick_up_location"] = Location.objects.get(zip_code=validated_data.pop("pick_up_location"))
+        validated_data["delivery_location"] = Location.objects.get(zip_code=validated_data.pop("delivery_location"))
 
         return super().create(validated_data)
 
@@ -45,17 +41,23 @@ class CargoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Cargo weight has to be between 1 and 1000")
         return value
 
-    def validate_pick_up_zipcode(self, value):
-        try:
-            return Location.objects.get(zip_code=value)
-        except django.db.models.ObjectDoesNotExist:
+    def validate_pick_up_location(self, value):
+        if not Location.objects.filter(zip_code=value).exists():
             raise serializers.ValidationError("Pick-up zipcode is unknown")
+        return value
 
-    def validate_delivery_zipcode(self, value):
-        try:
-            return Location.objects.get(zip_code=value)
-        except django.db.models.ObjectDoesNotExist:
+    def validate_delivery_location(self, value):
+        if not Location.objects.filter(zip_code=value).exists():
             raise serializers.ValidationError("Delivery zipcode is unknown")
+        return value
+
+    def validate(self, data):
+        if not data.get("pick_up_location"):
+            raise serializers.ValidationError("Pick-up location zipcode has to be provided")
+        if not data.get("delivery_location"):
+            raise serializers.ValidationError("Delivery location zipcode has to be provided")
+
+        return super().validate(data)
 
 
 class CargoListSerializer(serializers.ModelSerializer):
@@ -84,6 +86,20 @@ class CargoListSerializer(serializers.ModelSerializer):
 
 
 class TruckSerializer(serializers.ModelSerializer):
+    current_location = serializers.CharField(required=False)
+    payload_capacity = serializers.IntegerField(required=False)
+    unique_number = serializers.CharField(read_only=True)
+
     class Meta:
         model = Truck
-        fields = ["unique_number", "current_location", "payload_capacity"]
+        fields = ["id", "unique_number", "current_location", "payload_capacity"]
+
+    def create(self, validated_data):
+        validated_data["current_location"] = Location.objects.get(zip_code=validated_data.pop("current_location"))
+
+        return super().create(validated_data)
+
+    def validate_current_location(self, value):
+        if not Location.objects.filter(zip_code=value).exists():
+            raise serializers.ValidationError("Location zipcode is unknown")
+        return value
