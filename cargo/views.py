@@ -1,3 +1,33 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.response import Response
 
-# Create your views here.
+from api.serializers import CargoSerializer
+from cargo.models import Cargo
+from core.utils import get_distance
+from trucks.models import Truck
+
+
+class CargoViewSet(viewsets.ModelViewSet):
+    queryset = Cargo.objects.all()
+    serializer_class = CargoSerializer
+
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        data = serializer.data
+
+        print(data)
+
+        data["trucks"] = {}
+
+        for truck in Truck.objects.all():
+            distance_to_pick_up = get_distance(
+                instance.delivery_location.coordinates, truck.current_location.coordinates
+            )
+            data["trucks"][truck.unique_number] = distance_to_pick_up
+
+        return Response(data)
