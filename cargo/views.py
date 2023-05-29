@@ -4,10 +4,12 @@ from django.contrib.gis.measure import Distance
 from django.db.models import Count, F, Func, Q, Sum
 from django.db.models.fields import IntegerField
 from django.db.models.functions import Cast
+from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.response import Response
 
 from api.serializers import CargoListSerializer, CargoSerializer
+from cargo.filters import CargoFilter
 from cargo.models import Cargo
 from core.utils import get_distance
 from trucks.models import Truck
@@ -15,12 +17,13 @@ from trucks.models import Truck
 
 class CargoViewSet(viewsets.ModelViewSet):
     queryset = Cargo.objects.all()
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = CargoFilter
 
     def get_serializer_class(self):
         if self.action == "list":
             return CargoListSerializer
-        else:
-            return CargoSerializer
+        return CargoSerializer
 
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
