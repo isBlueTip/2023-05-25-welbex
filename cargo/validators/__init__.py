@@ -1,0 +1,1 @@
+from .cargo_weight_validator import validate_cargo_weight
