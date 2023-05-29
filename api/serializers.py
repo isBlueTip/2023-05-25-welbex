@@ -1,4 +1,4 @@
-import django.db.models
+from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
 from cargo.models import Cargo
@@ -7,18 +7,10 @@ from locations.models import Location
 from trucks.models import Truck
 
 
-class TruckListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Truck
-        # fields = ['unique_number', 'distance_to_cargo']
-        fields = [
-            "unique_number",
-        ]
-
-
 class CargoSerializer(serializers.ModelSerializer):
     pick_up_location = serializers.CharField(required=False)
     delivery_location = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
 
     class Meta:
         model = Cargo
@@ -36,10 +28,11 @@ class CargoSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
-    def validate_weight(self, value):
-        if not 0 < value <= 1000:
-            raise serializers.ValidationError("Cargo weight has to be between 1 and 1000")
-        return value
+    def update(self, instance, validated_data):
+        validated_data["pick_up_location"] = Location.objects.get(zip_code=validated_data.pop("pick_up_location"))
+        validated_data["delivery_location"] = Location.objects.get(zip_code=validated_data.pop("delivery_location"))
+
+        return super().update(instance, validated_data)
 
     def validate_pick_up_location(self, value):
         if not Location.objects.filter(zip_code=value).exists():
@@ -63,7 +56,7 @@ class CargoSerializer(serializers.ModelSerializer):
 class CargoListSerializer(serializers.ModelSerializer):
     pick_up_location = serializers.CharField(read_only=True)
     delivery_location = serializers.CharField(read_only=True)
-    closest_trucks_num = serializers.SerializerMethodField()
+    closest_trucks_num = serializers.SerializerMethodField("get_closest_trucks_num")
 
     class Meta:
         model = Cargo
@@ -76,7 +69,7 @@ class CargoListSerializer(serializers.ModelSerializer):
             "closest_trucks_num",
         ]
 
-    def get_closest_trucks_num(self, obj):
+    def get_closest_trucks_num(self, obj):  # TODO refactor as DB's function
         num = 0
         for truck in Truck.objects.all():
             distance_to_pick_up = get_distance(obj.delivery_location.coordinates, truck.current_location.coordinates)
@@ -87,7 +80,9 @@ class CargoListSerializer(serializers.ModelSerializer):
 
 class TruckSerializer(serializers.ModelSerializer):
     current_location = serializers.CharField(required=False)
-    payload_capacity = serializers.IntegerField(required=False)
+    payload_capacity = serializers.IntegerField(
+        required=False, validators=[MaxValueValidator(limit_value=1000), MinValueValidator(limit_value=0)]
+    )
     unique_number = serializers.CharField(read_only=True)
 
     class Meta:
@@ -97,7 +92,12 @@ class TruckSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["current_location"] = Location.objects.get(zip_code=validated_data.pop("current_location"))
 
-        return super().create(validated_data)
+        return super().update(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data["current_location"] = Location.objects.get(zip_code=validated_data.pop("current_location"))
+
+        return super().update(instance, validated_data)
 
     def validate_current_location(self, value):
         if not Location.objects.filter(zip_code=value).exists():
