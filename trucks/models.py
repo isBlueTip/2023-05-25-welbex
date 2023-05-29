@@ -1,10 +1,11 @@
 import random
 import string
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from locations.models import Location
-from trucks.validators import validate_payload_capacity, validate_unique_truck_number
+from trucks.validators import validate_unique_truck_number
 
 
 class Truck(models.Model):
@@ -12,8 +13,9 @@ class Truck(models.Model):
         max_length=5, blank=True, unique=True, verbose_name="Truck number", validators=[validate_unique_truck_number]
     )
     current_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="trucks")
-    payload_capacity = models.PositiveIntegerField(
-        verbose_name="Max cargo weight carried by the truck", validators=[validate_payload_capacity]
+    payload_capacity = models.PositiveSmallIntegerField(
+        verbose_name="Max cargo weight carried by the truck",
+        validators=[MaxValueValidator(limit_value=1000), MinValueValidator(limit_value=0)],
     )
 
     def __str__(self):
