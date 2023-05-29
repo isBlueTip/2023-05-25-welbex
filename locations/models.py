@@ -8,7 +8,7 @@ from locations.constants import US_states_codes
 class Location(TimeStampedModel, SoftDeletableModel):
     city = models.CharField(db_index=True, max_length=120, verbose_name="City")
     state = models.CharField(choices=US_states_codes, verbose_name="State")
-    zip_code = models.CharField(max_length=5, verbose_name="ZIP code", unique=True)
+    zip_code = models.CharField(db_index=True, max_length=5, verbose_name="ZIP code", unique=True)
     coordinates = gis_models.PointField(verbose_name="Coordinates of the city")
 
     def __str__(self):

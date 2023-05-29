@@ -1,7 +1,6 @@
 import string
 from random import choice, randint
 
-import django.db.utils
 from django.db import migrations, models
 
 
@@ -10,12 +9,12 @@ def populate_cargo(apps, schema_editor):
     Location = apps.get_model('locations', 'Location')
 
     locations = Location.objects.all()
-    num_of_locations = locations.count()
+    num_of_locations = locations.count() - 1
 
     for i in range(0, 10):
         cargo = Cargo.objects.create(
-            pick_up_location=Location.objects.all()[randint(1, 33000)],
-            delivery_location=Location.objects.all()[randint(1, 33000)],
+            pick_up_location=Location.objects.all()[randint(1, num_of_locations)],
+            delivery_location=Location.objects.all()[randint(1, num_of_locations)],
             weight=randint(1, 1000),
             description=f'Description of cargo #{i-1}'
         )
