@@ -40,6 +40,8 @@ INSTALLED_APPS = [
 
     # 3rd
     'rest_framework',
+    'django_filters',
+    'django.contrib.gis',
 
     # Own
     "locations.apps.LocationsConfig",
@@ -83,6 +85,7 @@ WSGI_APPLICATION = "welbex.wsgi.application"
 
 DATABASES = {
     'default': {
+        # 'ENGINE': 'django.db.backends.postgresql',
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'welbex',
         'USER': 'postgres',
@@ -90,6 +93,13 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '5430',
     }
+}
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
 }
 
 
