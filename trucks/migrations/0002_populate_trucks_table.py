@@ -1,5 +1,5 @@
 import string
-from random import choice, randint
+from random import randint, choice
 
 import django.db.utils
 from django.db import migrations, models
@@ -17,6 +17,7 @@ def generate_unique_number():
 
 def populate_trucks(apps, schema_editor):
     Truck = apps.get_model('trucks', 'Truck')
+
     cnt = 0
 
     while 1:
@@ -28,7 +29,7 @@ def populate_trucks(apps, schema_editor):
                 payload_capacity=randint(1, 1000),
             )
         except django.db.utils.IntegrityError:
-            pass
+            continue
         else:
             cnt += 1
         if cnt == 30:

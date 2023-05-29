@@ -20,7 +20,8 @@ def populate_locations(apps, schema_editor):
                 city=city,
                 state=state,
                 zip_code=zip_code,
-                coordinates=(Point(x=float(latitude), y=float(longitude))),
+                latitude=latitude,
+                longitude=longitude,
             )
 
 
