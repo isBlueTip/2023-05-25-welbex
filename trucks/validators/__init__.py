@@ -1,1 +1,0 @@
-from .truck_number_validator import validate_unique_truck_number
