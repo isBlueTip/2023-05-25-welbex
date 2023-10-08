@@ -7,7 +7,7 @@ from trucks.views import TruckViewSet
 app_name = "api"
 router = routers.DefaultRouter()
 router.register("cargo", CargoViewSet, basename="cargo")
-router.register("trucks", TruckViewSet)
+router.register("trucks", TruckViewSet, basename="trucks")
 
 urlpatterns = [
     path("", include(router.urls)),

@@ -19,8 +19,8 @@ class CargoViewSet(viewsets.ModelViewSet):
             return CargoListSerializer
         return CargoSerializer
 
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+    # def create(self, request, *args, **kwargs):
+    #     return super().create(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

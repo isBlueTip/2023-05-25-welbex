@@ -4,11 +4,7 @@ target-version = ['py39']
 include = '\.pyi?$'
 exclude = '''
 /(
-  api/migrations/*
-)/
-|
-/(
-  naparahsitenew/migrations/*
+  api/migrations/
 )/
 |
 /(

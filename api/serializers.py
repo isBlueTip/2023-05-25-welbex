@@ -2,7 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 
 from cargo.models import Cargo
-from core.utils import get_distance
+from trucks.utils import closest_trucks_num
 from locations.models import Location
 from trucks.models import Truck
 
@@ -70,12 +70,7 @@ class CargoListSerializer(serializers.ModelSerializer):
         ]
 
     def get_closest_trucks_num(self, obj):  # TODO refactor as DB's function
-        num = 0
-        for truck in Truck.objects.all():
-            distance_to_pick_up = get_distance(obj.delivery_location.coordinates, truck.current_location.coordinates)
-            if distance_to_pick_up <= 450:
-                num += 1
-        return num
+        return closest_trucks_num(obj)
 
 
 class TruckSerializer(serializers.ModelSerializer):

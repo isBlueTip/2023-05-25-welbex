@@ -3,7 +3,6 @@
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
-import trucks.validators.truck_number_validator
 
 
 class Migration(migrations.Migration):
@@ -24,7 +23,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         max_length=5,
                         unique=True,
-                        validators=[trucks.validators.truck_number_validator.validate_unique_truck_number],
+                        # validators=[trucks.validators.truck_number_validator.validate_unique_truck_number],
                         verbose_name="Truck number",
                     ),
                 ),
